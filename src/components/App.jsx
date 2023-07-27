@@ -16,10 +16,12 @@ const App = () => {
  
   useEffect(() => {
     if (countRender.current < 2) {
+      console.log(`useEffect ${countRender.current}`)
       countRender.current += 1
       return
     }
-     savePhoneBook(contacts)
+    savePhoneBook(contacts)
+    console.log("didUpdate")
   }, [contacts]);
 
   const  findContact = name => contacts.find(contact => contact.name.toLowerCase() === name.toLowerCase())
