@@ -12,16 +12,14 @@ import {loadPhoneBook, savePhoneBook} from '../service/localstorage'
 const App = () => {
    const [contacts, setContacts] = useState(loadPhoneBook());
   const [filter, setFilter] = useState("");
-  const countRender = useRef(0)
+  const firstRender = useRef(true)
  
   useEffect(() => {
-    if (countRender.current < 2) {
-      console.log(`useEffect ${countRender.current}`)
-      countRender.current += 1
+    if (firstRender.current ) {
+      firstRender.current =  false
       return
     }
     savePhoneBook(contacts)
-    console.log("didUpdate")
   }, [contacts]);
 
   const  findContact = name => contacts.find(contact => contact.name.toLowerCase() === name.toLowerCase())
