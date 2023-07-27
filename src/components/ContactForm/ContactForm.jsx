@@ -1,27 +1,33 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import css from './ContactForm.module.css';
 
-class ContactForm extends Component{
-    state = {
-        name: "",
-        number: ""
-    }
-    handleChange = e => {
+export const ContactForm = ({onSubmit}) => {
+  const [name, setName] = useState("");
+  const [number, setNumber] = useState("");
+
+  const setState = {
+    name: setName,
+    number: setNumber
+  }
+
+  const handleChange = e => {
         const { name, value } = e.target;
-        this.setState({ [name]: value });
-    }
-    handleSubmit = e => {
+        setState[name](value);
+  }
+
+  const reset= ()=> {
+    setName("")
+    setNumber("")
+  }
+  
+  const handleSubmit = e => {
         e.preventDefault()
-        if (!this.props.onSubmit({ ...this.state })) return
-        this.reset()
-    }
-    reset() {
-        this.setState({name: "", number: ""})
-    }
-    render() {
-        const {name, number} = this.state
-        return (
-          <form onSubmit={this.handleSubmit} className={css["contact-form"]}>
+        if (!onSubmit({name, number })) return
+        reset()
+  }
+  
+   return (
+          <form onSubmit={handleSubmit} className={css["contact-form"]}>
             <label className={css["contact-label"]}>
               Name    
               <input
@@ -31,7 +37,7 @@ class ContactForm extends Component{
                 title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
                 required
                 value={name}
-                onChange={this.handleChange}
+                onChange={handleChange}
                 className={css["contact-input"]}
               />
             </label>
@@ -44,14 +50,11 @@ class ContactForm extends Component{
                 title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
                 required
                 value={number}
-                onChange={this.handleChange}
+                onChange={handleChange}
                 className={css["contact-input"]}
               />
             </label>
             <button type="submit" className={css["contact-btn"]}>Add contact</button>
           </form>  
         )
-    }
 }
-
-export default ContactForm;

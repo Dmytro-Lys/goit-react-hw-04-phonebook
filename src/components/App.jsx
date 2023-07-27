@@ -1,58 +1,52 @@
 import css from "./App.module.css"
-import ContactForm from "./ContactForm/ContactForm";
+import { ContactForm } from "./ContactForm/ContactForm";
 import { ContactList } from "./ContactList/ContactList"
 import {Filter} from './Filter/Filter'
-import { Component } from "react";
+import { useState, useEffect, useRef } from "react";
 import { nanoid } from "nanoid";
 import Notiflix from 'notiflix';
 import 'notiflix/src/notiflix.css';
 import {loadPhoneBook, savePhoneBook} from '../service/localstorage'
 
-class App extends Component{
- state = {
-  contacts: [],
-  filter: ''
-  }
-  
-  componentDidMount() {
-     this.setState({contacts: loadPhoneBook()})
-  }
 
-  componentDidUpdate(prevProps, prevState) {
-    const prevContacts = prevState.contacts
-    const thisContacts = this.state.contacts
-    if (prevContacts.length !== thisContacts.length)  savePhoneBook(thisContacts)
-  }
+const App = () => {
+   const [contacts, setContacts] = useState(loadPhoneBook());
+  const [filter, setFilter] = useState("");
+  const countRender = useRef(0)
+ 
+  useEffect(() => {
+    if (countRender.current < 2) {
+      countRender.current += 1
+      return
+    }
+     savePhoneBook(contacts)
+  }, [contacts]);
 
-  addContact = contact => {
-    if (this.findContact(contact.name)) return  Notiflix.Notify.failure(`${contact.name} is already in contacts`); 
-    return this.setState(prev => {
-      return { contacts: [ ...prev.contacts, {id: nanoid(), ...contact }]  }
+  const  findContact = name => contacts.find(contact => contact.name.toLowerCase() === name.toLowerCase())
+
+   const addContact = contact => {
+     if (findContact(contact.name)) return Notiflix.Notify.failure(`${contact.name} is already in contacts`); 
+    return setContacts( prev => {
+      return [ ...prev, {id: nanoid(), ...contact }]  
     }) || true
   }
   
-  filterChange = e => {
-    this.setState({filter: e.target.value})
-  }
+  const filterChange = e => setFilter( e.target.value)
 
-  filterContacts = () => this.state.contacts.filter(contact => contact.name.toLowerCase().includes(this.state.filter.toLowerCase()))
+  const filterContacts = () => contacts.filter(contact => contact.name.toLowerCase().includes(filter.toLowerCase()))
 
-  findContact = name => this.state.contacts.find(contact => contact.name.toLowerCase() === name.toLowerCase())
-
-  delContact = id => {this.setState(prev => {return {contacts: prev.contacts.filter(contact => contact.id !== id)}})}
+  const delContact = id => setContacts(prev => prev.filter(contact => contact.id !== id))
   
-  render() {
-    return (
+  return (
       <div className={css.container}>
         <h1 className={css.title}>Phonebook</h1>
-        <ContactForm onSubmit={values => this.addContact(values)}/>
+        <ContactForm onSubmit={values => addContact(values)}/>
         <h2 className={css.title}>Contacts</h2>
-        <Filter filter={this.state.filter} handleChange={this.filterChange}/>
-        {this.state.contacts && <ContactList contacts={this.filterContacts()} onDel={this.delContact}/>}
+        <Filter filter={filter} handleChange={filterChange}/>
+        {contacts && <ContactList contacts={filterContacts()} onDel={delContact}/>}
       </div>
     )
-  }
-  
+
 }
 
 export default App
